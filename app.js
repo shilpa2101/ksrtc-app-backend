@@ -4,6 +4,7 @@ const mongoose=require("mongoose")
 const {usermodel}=require("./models/register")
 const bcrypt=require("bcryptjs")
 const jwt =require("jsonwebtoken")//importing token library
+const {busmodel}=require("./models/busmodel")
 
 const app=express()
 app.use(cors())
@@ -80,6 +81,25 @@ app.post("/view",(req,res)=>{
         })
     })
     
+
+
+ 
+app.post("/add",(req,res)=>{
+    let input=req.body
+    // res.send("success")
+    // console.log(input)
+
+    let bus=new busmodel(input)
+    // console.log(bus)
+    // res.send("model passing success")
+
+    bus.save()
+
+    res.json({"status":"success"})   
+   
+})   
+
+
 app.listen(8080,()=>{
    console.log("server started")
 })
