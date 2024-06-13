@@ -3,6 +3,7 @@ const cors=require("cors")
 const mongoose=require("mongoose")
 const {usermodel}=require("./models/register")
 const bcrypt=require("bcryptjs")
+const jwt =require("jsonwebtoken")//importing token library
 
 const app=express()
 app.use(cors())
@@ -20,12 +21,44 @@ app.post("/reg",async (req,res)=>{
     let input=req.body
     let hashedpswd=await generateHashedpswd(input.password)
     console.log(hashedpswd)
-    input.pass=hashedpswd//this is for getting hashed password in db
+    input.password=hashedpswd//this is for getting hashed password in db
     let register=new usermodel(input)
     register.save()
     res.json({"status":"success"})
 })
 
+//login api - here we need async as the password is encrypted
+app.post("/login",(req,res)=>{
+    let input =req.body
+    //we are checking with mail id
+    usermodel.find({"email":req.body.email}).then(
+        (response)=>{
+            if(response.length>0)
+                {
+                    let dbpass =response[0].password
+                    console.log(dbpass)
+                    bcrypt.compare(input.password,dbpass,(error,isMatch)=>{
+                        if (isMatch) {
+                            //if login success generate token
+                            jwt.sign({email:input.email},"user-app",{expiresIn:"1d"},
+                                (error,token)=>{
+                                if (error) {
+                                    res.json({"status":"unable to create token"})
+                                } else {
+                                    res.json({"status":"success","userid":response[0]._id,"token":token})
+                                }
+                            })//blog-app is the name of the token
+                        } else {
+                            res.json({"status":"incorrect password"})
+                        }
+                    })
+                }
+            else{
+                res.json({"status":"user not found"})
+            }
+        }
+    )
+    })
 
 app.listen(8080,()=>{
    console.log("server started")
