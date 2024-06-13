@@ -99,6 +99,18 @@ app.post("/add",(req,res)=>{
    
 })   
 
+app.post("/search",(req,res)=>{
+    let input=req.body
+    busmodel.find(input).then(
+        (data)=>{
+            res.json(data)
+        }
+    ).catch(
+        (error)=>{
+            req.json(error)
+        }
+    )
+})
 
 app.listen(8080,()=>{
    console.log("server started")
